@@ -20,7 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.compose.ui.text.font.FontWeight
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,10 +47,24 @@ fun JuegoAdivinarNumero(modifier: Modifier = Modifier) {
     var mensaje by remember { mutableStateOf("Adivina el número entre 0 y 100") }
     var juegoTerminado by remember { mutableStateOf(false) }
 
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    // ⏳ Timer de un minuto (60 segundos)
+    var tiempoRestante by remember { mutableStateOf(60) }
 
+    LaunchedEffect(Unit) {
+        while (tiempoRestante > 0 && !juegoTerminado) {
+            delay(1000L) // Espera 1 segundo
+            tiempoRestante--
+        }
+        if (tiempoRestante == 0) {
+            mensaje = "¡Se acabó el tiempo! El número secreto era $numeroSecreto."
+            juegoTerminado = true
+        }
+    }
+
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        // Android Logo en la esquina superior derecha
         Image(
-            painter = painterResource(id = R.drawable.android_logo), // Use your drawable resource
+            painter = painterResource(id = R.drawable.android_logo),
             contentDescription = "Android Logo",
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -57,18 +72,17 @@ fun JuegoAdivinarNumero(modifier: Modifier = Modifier) {
                 .size(50.dp)
         )
 
-
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Juego de adivinar el número", fontSize = 30.sp)
+            Text("Juego de adivinar el número", fontSize = 25.sp, fontWeight = FontWeight.Bold)
 
             Spacer(Modifier.height(10.dp))
             Image(
-                painter = painterResource(id = R.drawable.user_logo), // Use your drawable resource
+                painter = painterResource(id = R.drawable.user_logo),
                 contentDescription = "User Logo",
-                modifier = Modifier
-                    .padding(16.dp)
-                    .size(250.dp)
+                modifier = Modifier.padding(16.dp).size(250.dp)
             )
+
+            Text("⏳ Tiempo restante: $tiempoRestante s", fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
             Text(mensaje)
 
@@ -79,6 +93,7 @@ fun JuegoAdivinarNumero(modifier: Modifier = Modifier) {
                 onValueChange = { entradaUsuario = it },
                 enabled = !juegoTerminado
             )
+
             Spacer(Modifier.height(10.dp))
             Button(onClick = {
                 val numeroUsuario = entradaUsuario.toIntOrNull()
@@ -103,6 +118,7 @@ fun JuegoAdivinarNumero(modifier: Modifier = Modifier) {
             }, enabled = !juegoTerminado) {
                 Text("Adivinar")
             }
+
             Spacer(Modifier.height(10.dp))
             Text("Intentos restantes: $intentos")
         }
